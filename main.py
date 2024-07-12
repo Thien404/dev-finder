@@ -1,16 +1,81 @@
-# This is a sample Python script.
+import requests
 
-# Press Umschalt+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+GITHUB_API_URL = "https://api.github.com"
+ORG_NAME = "codecentric"
+AUTHORIZATION_HEADER = {"Authorization": "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"}
+
+def get_org_members(org_name):
+    try:
+        url = f"{GITHUB_API_URL}/orgs/{org_name}/members"
+        print(url)
+        response = requests.get(url, headers=AUTHORIZATION_HEADER)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Failed to get members of {org_name}") from e
+
+    print(response.json())
+    return response.json()
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Strg+F8 to toggle the breakpoint.
+def get_user_repos(username):
+    try:
+        url = f"{GITHUB_API_URL}/users/{username}/repos"
+        response = requests.get(url, headers=AUTHORIZATION_HEADER)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Failed to get repos of {username}") from e
+
+    print(response.json())
+    return response.json()
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+def get_repo_languages(owner, repo):
+    try:
+        url = f"{GITHUB_API_URL}/repos/{owner}/{repo}/languages"
+        response = requests.get(url, headers=AUTHORIZATION_HEADER)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Failed to get languages of {owner}/{repo}") from e
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    print(response.json())
+    return response.json()
+
+
+def gather_data(org_name):
+    members = get_org_members(org_name)
+    data = []
+
+    for member in members:
+        username = member['login']
+        repos = get_user_repos(username)
+        user_data = {'username': username, 'repos': []}
+
+        for repo in repos:
+            repo_name = repo['name']
+            languages = get_repo_languages(username, repo_name)
+            user_data['repos'].append({
+                'repo_name': repo_name,
+                'languages': list(languages.keys())
+            })
+
+        data.append(user_data)
+
+    return data
+
+
+def query_by_language(data, language):
+    result = []
+    for user in data:
+        for repo in user['repos']:
+            if language in repo['languages']:
+                result.append(user['username'])
+                break
+    return result
+
+
+# Daten sammeln
+data = gather_data(ORG_NAME)
+
+# Abfrage nach Scala Entwicklern
+scala_developers = query_by_language(data, 'Scala')
+print(scala_developers)
