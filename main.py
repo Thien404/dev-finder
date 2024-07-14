@@ -1,3 +1,5 @@
+import json
+
 import requests
 
 GITHUB_API_URL = "https://api.github.com"
@@ -5,16 +7,26 @@ ORG_NAME = "codecentric"
 AUTHORIZATION_HEADER = {"Authorization": "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"}
 
 def get_org_members(org_name):
+    # read content from user_data.json
+    members_data = None
+    with open('user_data.json', 'r') as file:
+        members_data = file.read()
+
+    if members_data:
+        print("Load members from file")
+        return json.loads(members_data)
     try:
         url = f"{GITHUB_API_URL}/orgs/{org_name}/members"
-        print(url)
+        print("Fetch members from:" + url)
         response = requests.get(url, headers=AUTHORIZATION_HEADER)
         response.raise_for_status()
+        members_data = response.json()
+        with open('user_data.json', 'w') as file:
+            file.write(json.dumps(members_data))
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to get members of {org_name}") from e
 
-    print(response.json())
-    return response.json()
+    return members_data
 
 
 def get_user_repos(username):
@@ -43,6 +55,7 @@ def get_repo_languages(owner, repo):
 
 def gather_data(org_name):
     members = get_org_members(org_name)
+    return members;
     data = []
 
     for member in members:
@@ -75,7 +88,8 @@ def query_by_language(data, language):
 
 # Daten sammeln
 data = gather_data(ORG_NAME)
-
+print(data)
+exit(1)
 # Abfrage nach Scala Entwicklern
-scala_developers = query_by_language(data, 'Scala')
+# scala_developers = query_by_language(data, 'Scala')
 print(scala_developers)
