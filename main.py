@@ -9,6 +9,8 @@ import utils.github_api as github_api
 from utils.data_processor import query_by_language
 
 ORG_NAME = "codecentric"
+MEMBERS_LIMIT = 4
+REPOS_LIMIT = 6
 
 
 def get_org_members(org_name):
@@ -60,7 +62,6 @@ def get_repo_languages(username, repo):
         lang_data = github_api.get_repo_languages(username, repo)
         write_repo_languages_to_file(username, repo, lang_data)
     except requests.exceptions.RequestException as e:
-        print("LANGUAGE ERROR")
         print(e)
         raise Exception(f"Failed to get languages of {username}/{repo}")
 
@@ -72,31 +73,21 @@ def gather_data(org_name):
     members = get_org_members(org_name)
     data = []
     print("Fetch data for " + str(len(members)) + " members")
-    counter = 0
-    for member in members:
-        if counter > 2:
-            break
-        counter += 1
+    for member in members[:MEMBERS_LIMIT]:
         username = member['login']
         try:
             repos = get_user_repos(username)
         except Exception as e:
-            print("Failed to get repos of " + username)
+            print(f"Failed to get repos of {username}: {e}")
             continue
+
         user_data = {'username': username, 'repos': []}
-
-        repo_counter = 0
-        for repo in repos:
-            # if repo_counter > 3:
-            #     break
-            repo_counter += 1
+        for repo in repos[:REPOS_LIMIT]:
             repo_name = repo['name']
-
             try:
                 languages = get_repo_languages(username, repo_name)
             except Exception as e:
-                print("Failed to get languages of " + username + "/" + repo_name)
-                print(e)
+                print(f"Failed to get languages of {username}/{repo_name}: {e}")
                 continue
 
             if len(languages) <= 0:

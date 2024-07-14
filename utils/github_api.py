@@ -41,7 +41,7 @@ def send_request(url):
 
 def handle_api_rate_limit(response):
     rate_limit_remaining = response.headers.get("X-RateLimit-Remaining", None)
-    if rate_limit_remaining is not None and int(rate_limit_remaining) < 100:
+    if rate_limit_remaining is not None and int(rate_limit_remaining) < 10:
         reset_time = response.headers.get("X-RateLimit-Reset", None)
         dt = datetime.datetime.fromtimestamp(int(reset_time))
         print(f"Rate limit reached. Reset time: {dt}; {reset_time}")
