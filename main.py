@@ -9,19 +9,22 @@ AUTHORIZATION_HEADER = {"Authorization": "ghp_R17xgHcnXkMUWNT2B5N4QCI2KiRews3e4k
 def get_org_members(org_name):
     # read content from user_data.json
     members_data = None
-    with open('user_data.json', 'r') as file:
+    with open('data/user_data.json', 'r') as file:
         members_data = file.read()
 
     if members_data:
         print("Load members from file")
-        return json.loads(members_data)
+        users = json.loads(members_data)
+        print(str(len(users)) + " entries found")
+        return users
     try:
         url = f"{GITHUB_API_URL}/orgs/{org_name}/members"
         print("Fetch members from:" + url)
         response = requests.get(url, headers=AUTHORIZATION_HEADER)
         response.raise_for_status()
         members_data = response.json()
-        with open('user_data.json', 'w') as file:
+        with open('data/user_data.json', 'w') as file:
+            print("Write members to file")
             file.write(json.dumps(members_data))
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to get members of {org_name}") from e
@@ -55,8 +58,6 @@ def get_repo_languages(owner, repo):
 
 def gather_data(org_name):
     members = get_org_members(org_name)
-    return members;
-    data = []
 
     for member in members:
         username = member['login']
