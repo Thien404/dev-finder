@@ -51,7 +51,7 @@ def get_user_repos(username):
         repos_data = json.loads(file_content)
 
     # return data if exists
-    if repos_data and len(repos_data) > 0:
+    if len(repos_data) > 0 or repos_data == {}:
         print("Load repos from file: " + username)
         return repos_data
 
@@ -60,10 +60,12 @@ def get_user_repos(username):
         url = f"{GITHUB_API_URL}/users/{username}/repos"
         response = requests.get(url, headers=AUTHORIZATION_HEADER)
         response.raise_for_status()
+        print(response.headers())
         repos_data = response.json()
         with open("data/" + username + "/repos.json", "w") as file:
             file.write(json.dumps(repos_data))
     except requests.exceptions.RequestException as e:
+        print(e)
         raise Exception(f"Failed to get repos of {username}") from e
 
     return repos_data
@@ -83,7 +85,7 @@ def get_repo_languages(username, repo):
         file_content = file.read()
         lang_data = json.loads(file_content)
 
-    if lang_data and len(lang_data) > 0:
+    if len(lang_data) > 0 or lang_data == {}:
         print(f"Load languages from file: {username}/{repo}")
         return lang_data
 
@@ -91,37 +93,55 @@ def get_repo_languages(username, repo):
         print("Fetch languages from: " + username + "/" + repo)
         url = f"{GITHUB_API_URL}/repos/{username}/{repo}/languages"
         response = requests.get(url, headers=AUTHORIZATION_HEADER)
+        print(response.headers)
         response.raise_for_status()
+
         lang_data = response.json()
         with open(f"data/{username}/{repo}.json", "w") as file:
             file.write(json.dumps(lang_data))
     except requests.exceptions.RequestException as e:
-        raise Exception(f"Failed to get languages of {username}/{repo}") from e
+        print("LANGUAGE ERROR")
+        print(e)
+        raise Exception(f"Failed to get languages of {username}/{repo}")
 
     return lang_data
 
 
+# main function
 def gather_data(org_name):
     members = get_org_members(org_name)
+    data = []
     print("Fetch data for " + str(len(members)) + " members")
     counter = 0
     for member in members:
-        if counter > 2:
+        if counter > 10:
             break
         counter += 1
         username = member['login']
-        print("Fetch data for user: " + username)
-        repos = get_user_repos(username)
+        try:
+            repos = get_user_repos(username)
+        except Exception as e:
+            print("Failed to get repos of " + username)
+            continue
         user_data = {'username': username, 'repos': []}
-        print("Fetch data for " + str(len(repos)) + " repos")
-
+#1720977749
         repo_counter = 0
         for repo in repos:
-            if repo_counter > 2:
+            if repo_counter > 3:
                 break
             repo_counter += 1
             repo_name = repo['name']
-            languages = get_repo_languages(username, repo_name)
+
+            try:
+                languages = get_repo_languages(username, repo_name)
+            except Exception as e:
+                print("Failed to get languages of " + username + "/" + repo_name)
+                print(e)
+                continue
+
+            if len(languages) <= 0:
+                continue
+
             user_data['repos'].append({
                 'repo_name': repo_name,
                 'languages': list(languages.keys())
@@ -136,7 +156,7 @@ def query_by_language(data, language):
     result = []
     for user in data:
         for repo in user['repos']:
-            if language in repo['languages']:
+            if language.lower() in [la.lower() for la in repo['languages']]:
                 result.append(user['username'])
                 break
     return result
@@ -144,8 +164,8 @@ def query_by_language(data, language):
 
 # Daten sammeln
 data = gather_data(ORG_NAME)
-print(data)
-exit(1)
-# Abfrage nach Scala Entwicklern
-# scala_developers = query_by_language(data, 'Scala')
-print(scala_developers)
+
+# Daten filtern
+matching_devs = query_by_language(data, 'clojure')
+
+print(matching_devs)
