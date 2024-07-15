@@ -101,14 +101,16 @@ def gather_data(org_name):
 def query_by_language(data, language):
     result = []
     for user in data:
+        total_lines = 0
         for repo in user['repos']:
             repo_languages = {k.lower(): v for k, v in repo['languages'].items()}
             if language.lower() in repo_languages:
-                result.append({
-                    'username': user['username'],
-                    'language': language,
-                    'lines': repo_languages[language.lower()]
-                })
-            break
+                total_lines += repo_languages[language.lower()]
+        if total_lines > 0:
+            result.append({
+                'username': user['username'],
+                'language': language,
+                'lines': total_lines
+            })
     result.sort(key=lambda x: x['lines'], reverse=True)
     return result
