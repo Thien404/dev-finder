@@ -5,8 +5,8 @@ from utils.file_utils import (
 import utils.github_api as github_api
 import requests
 
-MEMBERS_LIMIT = 4
-REPOS_LIMIT = 6
+MEMBERS_LIMIT = 5
+REPOS_LIMIT = 5
 
 
 def get_org_members(org_name):
@@ -64,16 +64,6 @@ def get_repo_languages(username, repo):
     return lang_data
 
 
-def query_by_language(data, language):
-    result = []
-    for user in data:
-        for repo in user['repos']:
-            if language.lower() in [la.lower() for la in repo['languages']]:
-                result.append(user['username'])
-                break
-    return result
-
-
 def gather_data(org_name):
     members = get_org_members(org_name)
     data = []
@@ -95,15 +85,30 @@ def gather_data(org_name):
                 print(f"Failed to get languages of {username}/{repo_name}: {e}")
                 continue
 
-            if len(languages) <= 0:
+            if len(languages) == 0:
                 continue
 
             user_data['repos'].append({
                 'repo_name': repo_name,
-                'languages': list(languages.keys())
+                'languages': languages
             })
 
         data.append(user_data)
 
     return data
 
+
+def query_by_language(data, language):
+    result = []
+    for user in data:
+        for repo in user['repos']:
+            repo_languages = {k.lower(): v for k, v in repo['languages'].items()}
+            if language.lower() in repo_languages:
+                result.append({
+                    'username': user['username'],
+                    'language': language,
+                    'lines': repo_languages[language.lower()]
+                })
+            break
+    result.sort(key=lambda x: x['lines'], reverse=True)
+    return result
