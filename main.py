@@ -5,7 +5,7 @@ ORG_NAME = "codecentric"
 
 def main():
     data = gather_data(ORG_NAME)
-    matching_devs = query_by_language(data, 'python')
+    matching_devs = query_by_language(data, 'scala')
 
     print(matching_devs)
 

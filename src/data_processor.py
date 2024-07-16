@@ -2,11 +2,11 @@ from src.file_utils import (
     get_repos_from_file, get_members_from_file, get_languages_from_file,
     write_org_members_to_file, write_user_repos_to_file, write_repo_languages_to_file
 )
-import utils.github_api as github_api
+import src.github_api as github_api
 import requests
 
-MEMBERS_LIMIT = 5
-REPOS_LIMIT = 5
+MEMBERS_LIMIT = 300
+REPOS_LIMIT = 110
 
 
 def get_org_members(org_name):
@@ -15,7 +15,7 @@ def get_org_members(org_name):
     if members_data is None:
         members_data = {}
     # return members if exists in file
-    if len(members_data) > 0 or members_data == {}:
+    if len(members_data) > 0 or members_data == {} or members_data == []:
         print("Load members from file")
         return members_data
     try:
@@ -32,7 +32,7 @@ def get_user_repos(username):
     if repos_data is None:
         repos_data = {}
     # return data if exists in file
-    if len(repos_data) > 0 or repos_data == {}:
+    if len(repos_data) > 0 or repos_data == {} or repos_data == []:
         print("Load repos from file: " + username)
         return repos_data
 
@@ -50,7 +50,7 @@ def get_repo_languages(username, repo):
     lang_data = get_languages_from_file(username, repo)
     if lang_data is None:
         lang_data = {}
-    if len(lang_data) > 0 or lang_data == {}:
+    if len(lang_data) > 0 or lang_data == {} or lang_data == []:
         print(f"Load languages from file: {username}/{repo}")
         return lang_data
 

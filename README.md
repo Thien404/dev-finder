@@ -49,3 +49,4 @@ Find a developer to work on your project by language.
 - Improve GitHub API rate limiting handling
 - Improve error handling
 - Add pipeline CI integration
+- Parallelize data gathering with multiprocessing
