@@ -1,5 +1,5 @@
 import pytest
-from utils.data_processor import query_by_language
+from src.data_processor import query_by_language
 
 
 @pytest.fixture

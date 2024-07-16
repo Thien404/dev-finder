@@ -1,4 +1,4 @@
-from utils.file_utils import (
+from src.file_utils import (
     get_repos_from_file, get_members_from_file, get_languages_from_file,
     write_org_members_to_file, write_user_repos_to_file, write_repo_languages_to_file
 )

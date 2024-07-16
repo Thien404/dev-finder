@@ -1,11 +1,11 @@
-from utils.data_processor import query_by_language, gather_data
+from src.data_processor import query_by_language, gather_data
 
 ORG_NAME = "codecentric"
 
 
 def main():
     data = gather_data(ORG_NAME)
-    matching_devs = query_by_language(data, 'java')
+    matching_devs = query_by_language(data, 'python')
 
     print(matching_devs)
 
