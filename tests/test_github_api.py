@@ -13,7 +13,7 @@ class TestGitHubAPI(unittest.TestCase):
         mock_get.return_value = mock_response
 
         members = get_org_members('codecentric')
-        self.assertEquals(members, [{'login': 'user1'}, {'login': 'user2'}])
+        self.assertEqual(members, [{'login': 'user1'}, {'login': 'user2'}])
         mock_get.assert_called_with(
             'https://api.github.com/orgs/codecentric/members',
             headers={"Authorization": "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"})
@@ -70,6 +70,17 @@ class TestGitHubAPI(unittest.TestCase):
             'X-RateLimit-Reset': str(int(time.time()) + 10)  # Reset in 10 seconds
         }
 
-        result = handle_api_rate_limit(mock_response)
-        self.assertTrue(result)
+        handle_api_rate_limit(mock_response)
         mock_sleep.assert_called_once()
+
+    @patch('src.github_api.time.sleep', return_value=None)  # To avoid actually sleeping during tests
+    def test_do_not_handle_api_rate_limit(self, mock_sleep):
+        mock_response = MagicMock()
+        import time
+        mock_response.headers = {
+            'X-RateLimit-Remaining': '100'
+        }
+
+        handle_api_rate_limit(mock_response)
+        mock_sleep.assert_not_called()
+
