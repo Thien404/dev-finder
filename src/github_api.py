@@ -41,14 +41,14 @@ def send_request(url):
 def handle_api_rate_limit(response):
     rate_limit_remaining = response.headers.get("X-RateLimit-Remaining", None)
 
-    if rate_limit_remaining is not None and int(rate_limit_remaining) < RATE_LIMIT_TRESHHOLD:
-        reset_time = response.headers.get("X-RateLimit-Reset", None)
-        dt = datetime.datetime.fromtimestamp(int(reset_time))
-        print(f"Rate limit reached. Next requests at: {dt} // timestamp: {reset_time}")
-        seconds_to_wait = int(reset_time) - int(time.time()) + 1
-        minutes = seconds_to_wait // 60
-        print(f"Waiting {seconds_to_wait} seconds // {minutes} minutes")
-        print(response.headers)
-        time.sleep(seconds_to_wait)
-        return True
-    return False
+    if rate_limit_remaining is None or int(rate_limit_remaining) >= RATE_LIMIT_TRESHHOLD:
+        return
+
+    reset_time = response.headers.get("X-RateLimit-Reset", None)
+    dt = datetime.datetime.fromtimestamp(int(reset_time))
+    print(f"Rate limit reached. Next requests at: {dt} // timestamp: {reset_time}")
+    seconds_to_wait = int(reset_time) - int(time.time()) + 1
+    minutes = seconds_to_wait // 60
+    print(f"Waiting {seconds_to_wait} seconds // {minutes} minutes")
+    print(response.headers)
+    time.sleep(seconds_to_wait)
