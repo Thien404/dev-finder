@@ -4,6 +4,7 @@ from src.file_utils import (
 )
 import src.github_api as github_api
 import requests
+import pandas as pd
 
 MEMBERS_LIMIT = 300
 REPOS_LIMIT = 110
@@ -95,6 +96,7 @@ def gather_data(org_name):
 
         data.append(user_data)
 
+    # df = pd.DataFrame(data)
     return data
 
 

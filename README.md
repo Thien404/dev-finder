@@ -19,7 +19,9 @@ Find a developer to work on your project by language.
     ```python
     AUTHORIZATION_HEADER = {"Authorization": "YOUR_GITHUB_TOKEN"}
     ```
-   
+   Keep in mind that GitHub has a secondary restriction that only allows 60 requests per hour!
+
+
 2. Run the script:
 
     You can run the main script to gather data and query developers by language:
